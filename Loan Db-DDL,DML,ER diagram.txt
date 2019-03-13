@@ -42,9 +42,12 @@ CREATE TABLE employee_issue_details
 	return_date date	
 );
 
-insert into loan_card_master values(00001,'stationary',5);
-insert into loan_card_master values(00002,'recurring',0);
-insert into loan_card_master values(00003,'Crockery',1);
+insert into loan_card_master
+values('00001','stationary',5);
+insert into loan_card_master
+values('00002','recurring',0);
+insert into loan_card_master
+values('00003','Crockery',1);
 
 
 
