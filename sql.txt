@@ -1,0 +1,15 @@
+display the employees who is having second high members
+ select department_id,count(*)from employees group by department_id
+  2  having
+  3  count(*)=
+  4  (select max(count(*))
+  5  from employees
+  6  group by department_id
+  7  having count(*)<
+  8  (Select max(count(*))
+  9* from employees group by department_id))
+SQL> /
+
+DEPARTMENT_ID   COUNT(*)
+------------- ----------
+           80         34

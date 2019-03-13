@@ -1,0 +1,880 @@
+<html>
+<body>
+
+AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***AIRLINES***
+
+
+
+1.Write a query to display the average monthly ticket cost for each flight in ABC  Airlines.
+The query should display the Flight_Id,From_location,To_Location,Month Name as “Month_Name” and average price as “Average_Price” 
+Display the records sorted in ascending order based on flight id and then by Month Name.
+
+select af.flight_id,af.from_location,af.to_location,monthname(afd.flight_departure_date) as Month_Name,avg(afd.price) as Average_Price
+from air_flight af
+join air_flight_details afd
+on afd.flight_id = af.flight_id
+group by af.flight_id
+order by cast(af.flight_id as unsigned),Month_Name
+
+
++-----------+---------------+-------------+------------+---------------+
+| flight_id | from_location | to_location | Month_Name | Average_Price |
++-----------+---------------+-------------+------------+---------------+
+| 289       | CHENNAI       | KOCHI       | May        |   3257.750000 |
+| 916       | CHENNAI       | HYDERABAD   | April      |   3699.500000 |
+| 1011      | HYDERABAD     | CHENNAI     | April      |   4108.333333 |
+| 1262      | HYDERABAD     | CHENNAI     | May        |   3444.500000 |
+| 1265      | CHENNAI       | HYDERABAD   | April      |   3499.250000 |
+| 3004      | BENGALURU     | CHENNAI     | May        |   3319.666667 |
+| 3013      | CHENNAI       | BENGALURU   | May        |   3257.750000 |
+| 3148      | CHENNAI       | BENGALURU   | May        |   2959.000000 |
+| 3241      | CHENNAI       | KOCHI       | May        |   3303.666667 |
+| 3244      | KOCHI         | CHENNAI     | May        |   3371.500000 |
+| 3307      | BENGALURU     | CHENNAI     | May        |   3379.000000 |
++-----------+---------------+-------------+------------+---------------+
+11 rows in set (0.00 sec)
+
+
+
+
+=================================================================================================
+
+2.Write a query to display the customer(s) who has/have booked least number of tickets in ABC Airlines. 
+The Query should display profile_id, customer’s first_name, Address and Number of tickets booked as “No_of_Tickets” 
+Display the records sorted in ascending order based on customer's first name.  
+
+select ati.profile_id,app.first_name,app.address,count(ati.ticket_id) as No_of_Tickets
+from air_ticket_info ati
+join air_passenger_profile app on app.profile_id=ati.profile_id
+group by ati.profile_id
+having count(ticket_id) <= all(select count(ati.ticket_id) from air_ticket_info ati join 
+air_passenger_profile app on ati.profile_id=app.profile_id group by ati.profile_id)
+order by app.first_name
+
+
++------------+------------+------------------------+---------------+
+| profile_id | first_name | address                | No_of_Tickets |
++------------+------------+------------------------+---------------+
+| PFL008     | GANESH     | 45 3RD ST,HYDERABAD-21 |             1 |
++------------+------------+------------------------+---------------+
+1 row in set (0.00 sec)
+
+
+=====================================================================================================
+
+3.Write a query to display the number of flight services between locations in a month.
+The Query should display From_Location, To_Location, Month as “Month_Name” and number of flight services as “No_of_Services”.  
+Hint: The Number of Services can be calculated from the number of scheduled departure dates of a flight. 
+The records should be displayed in ascending order based on From_Location and then by To_Location and then by month name
+
+
+select af.from_location,af.to_location,monthname(afd.flight_departure_date) as Month_Name,count(afd.flight_departure_date)
+as No_of_Services from air_flight af
+join air_flight_details afd on afd.flight_id=af.flight_id
+group by af.from_location,af.to_location,monthname(afd.flight_departure_date)
+order by af.from_location,af.to_location,Month_Name
+
+
++---------------+-------------+------------+----------------+
+| from_location | to_location | Month_Name | No_of_Services |
++---------------+-------------+------------+----------------+
+| BENGALURU     | CHENNAI     | May        |              7 |
+| CHENNAI       | BENGALURU   | June       |              1 |
+| CHENNAI       | BENGALURU   | May        |              6 |
+| CHENNAI       | HYDERABAD   | April      |              2 |
+| CHENNAI       | HYDERABAD   | May        |              6 |
+| CHENNAI       | KOCHI       | May        |              7 |
+| HYDERABAD     | CHENNAI     | April      |              1 |
+| HYDERABAD     | CHENNAI     | May        |              4 |
+| KOCHI         | CHENNAI     | May        |              2 |
++---------------+-------------+------------+----------------+
+9 rows in set (0.00 sec)
+
+
+==================================================================================================
+
+ 4.Write a query to display the customer(s) who has/have booked maximum number of tickets in ABC Airlines. 
+ The Query should display profile_id, customer’s first_name, Address and Number of tickets booked as “No_of_Tickets” 
+ Display the records in ascending order based on customer's first name. 
+ 
+ select app.profile_id,app.first_name,app.address,count(ati.ticket_id) as No_of_Tickets from air_passenger_profile app
+ join air_ticket_info ati
+ on app.profile_id=ati.profile_id
+ join air_flight af
+ on af.flight_id=ati.flight_id
+ where airline_name='ABC AIRLINES'
+ group by app.profile_id
+ having count(ati.ticket_id)>=all(select count(ati.ticket_id) from air_passenger_profile app
+ join air_ticket_info ati on app.profile_id=ati.profile_id
+ join air_flight af on af.flight_id=ati.flight_id
+ where airline_name='ABC AIRLINES'
+ group by app.profile_id)
+ order by app.first_name
+ 
+ 
+ 
+ +------------+------------+------------------------------+---------------+
+| profile_id | first_name | address                      | No_of_Tickets |
++------------+------------+------------------------------+---------------+
+| PFL002     | ARUN       | 768  2ND STREET,BENGALURU-20 |             5 |
+| PFL007     | GAYATHRI   | 23 2ND CROSS ST,BENGALURU-12 |             5 |
++------------+------------+------------------------------+---------------+
+2 rows in set (0.00 sec)
+
+
+=====================================================================================================
+
+5.Write a query to display the number of tickets booked from Chennai to Hyderabad.
+The Query should display passenger profile_id,first_name,last_name, Flight_Id , Departure_Date 
+and  number of tickets booked as “No_of_Tickets”. 
+Display the records sorted in ascending order based on profile id and then by flight id and then by departure date.  
+
+
+select app.profile_id,app.first_name,app.last_name,ati.flight_id,ati.flight_departure_date,count(ati.ticket_id) as No_of_Tickets
+from air_passenger_profile app join air_ticket_info ati on app.profile_id=ati.profile_id
+join air_flight af on af.flight_id=ati.flight_id
+where af.from_location='Chennai' and af.to_location='Hyderabad'
+group by app.profile_id,ati.flight_id,ati.flight_departure_date
+order by app.profile_id,ati.flight_id,ati.flight_departure_date
+
+
++------------+------------+-----------+-----------+-----------------------+---------------+
+| profile_id | first_name | last_name | flight_id | flight_departure_date | No_of_Tickets |
++------------+------------+-----------+-----------+-----------------------+---------------+
+| PFL001     | LATHA      | SANKAR    | 1265      | 2013-04-29            |             1 |
+| PFL004     | AARTHI     | RAMESH    | 1265      | 2013-05-29            |             1 |
+| PFL005     | SIVA       | KUMAR     | 916       | 2013-05-06            |             2 |
++------------+------------+-----------+-----------+-----------------------+---------------+
+3 rows in set (0.00 sec)
+
+===========================================================================================================
+
+6.Write a query to display flight id,from location, to location and ticket price of flights whose departure is in the month of april. 
+
+select af.flight_id,af.from_location,af.to_location,afd.price from air_flight af
+join air_flight_details afd on afd.flight_id=af.flight_id
+where monthname(afd.flight_departure_date)='April'
+order by af.flight_id,af.from_location
+
+
++-----------+---------------+-------------+---------+
+| flight_id | from_location | to_location | price   |
++-----------+---------------+-------------+---------+
+| 1011      | HYDERABAD     | CHENNAI     | 4614.00 |
+| 1265      | CHENNAI       | HYDERABAD   | 4086.00 |
+| 916       | CHENNAI       | HYDERABAD   | 4086.00 |
++-----------+---------------+-------------+---------+
+3 rows in set (0.00 sec)
+
+
+=============================================================================================================
+
+7.Write a query to display the average cost of the tickets in each flight on all scheduled dates. 
+The query should display flight_id, from_location, to_location and Average price as “Price”. 
+Display the records sorted in ascending order based on flight id and then by from_location and then by to_location. 
+
+
+select af.flight_id,af.from_location,af.to_location,avg(afd.price) from air_flight af
+join air_flight_details afd on afd.flight_id=af.flight_id
+group by af.flight_id,af.from_location,af.to_location
+order by af.flight_id,af.from_location,af.to_location
+
++-----------+---------------+-------------+----------------+
+| flight_id | from_location | to_location | avg(afd.price) |
++-----------+---------------+-------------+----------------+
+| 1011      | HYDERABAD     | CHENNAI     |    4108.333333 |
+| 1262      | HYDERABAD     | CHENNAI     |    3444.500000 |
+| 1265      | CHENNAI       | HYDERABAD   |    3499.250000 |
+| 289       | CHENNAI       | KOCHI       |    3257.750000 |
+| 3004      | BENGALURU     | CHENNAI     |    3319.666667 |
+| 3013      | CHENNAI       | BENGALURU   |    3257.750000 |
+| 3148      | CHENNAI       | BENGALURU   |    2959.000000 |
+| 3241      | CHENNAI       | KOCHI       |    3303.666667 |
+| 3244      | KOCHI         | CHENNAI     |    3371.500000 |
+| 3307      | BENGALURU     | CHENNAI     |    3379.000000 |
+| 916       | CHENNAI       | HYDERABAD   |    3699.500000 |
++-----------+---------------+-------------+----------------+
+11 rows in set (0.01 sec)
+
+=====================================================================================================
+8.Write a query to display the customers who have booked tickets from Chennai to Hyderabad. The query should display profile_id, 
+customer_name (combine first_name & last_name with comma in b/w), address of the customer.  
+Give an alias to the name as customer_name. 
+Hint: Query should fetch unique customers irrespective of multiple tickets booked.
+Display the records sorted in ascending order based on profile id.  
+
+
+select distinct app.profile_id,concat(app.first_name,',',app.last_name) as customer_name,app.address from air_passenger_profile app
+join air_ticket_info ati on app.profile_id=ati.profile_id
+join air_flight af on af.flight_id=ati.flight_id
+where af.from_location='Chennai' and af.to_location='Hyderabad'
+order by app.profile_id
+
+
+
++------------+---------------+--------------------------------+
+| profile_id | customer_name | address                        |
++------------+---------------+--------------------------------+
+| PFL001     | LATHA,SANKAR  | 123 BROAD  CROSS ST,CHENNAI-48 |
+| PFL004     | AARTHI,RAMESH | 343 6TH STREET,HYDERABAD-76    |
+| PFL005     | SIVA,KUMAR    | 125 8TH STREET,CHENNAI-46      |
++------------+---------------+--------------------------------+
+3 rows in set (0.00 sec)
+===============================================================================================================
+
+9.Write a query to display profile id of the passenger(s) who has/have booked maximum number of tickets. 
+In case of multiple records, display the records sorted in ascending order based on profile id. 
+
+select app.profile_id from air_passenger_profile app
+join air_ticket_info ati on app.profile_id=ati.profile_id
+group by app.profile_id 
+having count(ati.ticket_id)>=all(select count(ati.ticket_id) from air_ticket_info ati
+join air_passenger_profile app on ati.profile_id=app.profile_id group by ati.profile_id)
+order by app.profile_id
+
+
++------------+
+| profile_id |
++------------+
+| PFL002     |
+| PFL007     |
++------------+
+2 rows in set (0.00 sec)
+
+===============================================================================================================
+10.Write a query to display the total number of tickets as “No_of_Tickets” booked in each flight in ABC Airlines. 
+The Query should display the flight_id, from_location, to_location and the number of tickets. 
+Display only the flights in which atleast 1 ticket is booked. 
+Display the records sorted in ascending order based on flight id. 
+
+
+select af.flight_id,af.from_location,af.to_location,count(ati.ticket_id) as No_of_Tickets from air_flight af
+join air_ticket_info ati on ati.flight_id=af.flight_id
+group by af.flight_id
+having count(ati.ticket_id)>=1
+order by cast(af.flight_id as unsigned)
+
+
++-----------+---------------+-------------+---------------+
+| flight_id | from_location | to_location | No_of_Tickets |
++-----------+---------------+-------------+---------------+
+| 916       | CHENNAI       | HYDERABAD   |             2 |
+| 1011      | HYDERABAD     | CHENNAI     |             4 |
+| 1262      | HYDERABAD     | CHENNAI     |             1 |
+| 1265      | CHENNAI       | HYDERABAD   |             2 |
+| 3004      | BENGALURU     | CHENNAI     |             3 |
+| 3148      | CHENNAI       | BENGALURU   |             7 |
+| 3244      | KOCHI         | CHENNAI     |             7 |
++-----------+---------------+-------------+---------------+
+7 rows in set (0.00 sec)
+
+
+==================================================================================================================
+
+11.Write a query to display the no of services offered by each flight and the total price of the services. 
+The Query should display flight_id, number of services as “No_of_Services” and the cost as “Total_Price” in the same order.   
+Order the result by Total Price in descending order and then by flight_id in descending order.  
+Hint:The number of services can be calculated from the number of scheduled departure dates of the flight 
+
+select afd.flight_id,count(afd.flight_departure_date) as No_of_Services,sum(afd.price) as Total_Price from air_flight_details afd
+group by flight_id
+order by Total_Price desc,cast(afd.flight_id as unsigned) desc
+
++-----------+----------------+-------------+
+| flight_id | No_of_Services | Total_Price |
++-----------+----------------+-------------+
+| 916       |              4 |    14798.00 |
+| 1265      |              4 |    13997.00 |
+| 3307      |              4 |    13516.00 |
+| 3013      |              4 |    13031.00 |
+| 289       |              4 |    13031.00 |
+| 1011      |              3 |    12325.00 |
+| 3004      |              3 |     9959.00 |
+| 3241      |              3 |     9911.00 |
+| 3148      |              3 |     8877.00 |
+| 1262      |              2 |     6889.00 |
+| 3244      |              2 |     6743.00 |
++-----------+----------------+-------------+
+11 rows in set (0.01 sec)
+
+
+===============================================================================================================
+
+12.Write a query to display the number of passengers who have travelled in each flight in each scheduled date. 
+The Query should display flight_id, flight_departure_date and the number of passengers as “No_of_Passengers” in the same order. 
+Display the records sorted in ascending order based on flight id and then by flight departure date. 
+
+select ati.flight_id,ati.flight_departure_date,count(ati.ticket_id) as No_of_Passengers from air_ticket_info ati
+group by ati.flight_id,ati.flight_departure_date
+order by cast(ati.flight_id as unsigned),ati.flight_departure_date
+
+
++-----------+-----------------------+------------------+
+| flight_id | flight_departure_date | No_of_Passengers |
++-----------+-----------------------+------------------+
+| 916       | 2013-05-06            |                2 |
+| 1011      | 2013-05-09            |                4 |
+| 1262      | 2013-05-20            |                1 |
+| 1265      | 2013-04-29            |                1 |
+| 1265      | 2013-05-29            |                1 |
+| 3004      | 2013-05-02            |                3 |
+| 3148      | 2013-05-21            |                2 |
+| 3148      | 2013-06-01            |                5 |
+| 3244      | 2013-05-03            |                7 |
++-----------+-----------------------+------------------+
+9 rows in set (0.00 sec)
+
+=============================================================================================================
+
+13.Write a query to display profile id of passenger(s) who booked minimum number of tickets. 
+In case of multiple records, display the records sorted in ascending order based on profile id.
+
+select ati.profile_id from air_ticket_info ati
+group by ati.profile_id
+having count(ati.ticket_id)<= all(select count(ati.ticket_id) from air_ticket_info ati
+group by ati.profile_id)
+order by ati.profile_id
+
+
++------------+
+| profile_id |
++------------+
+| PFL008     |
++------------+
+1 row in set (0.02 sec)
+
+============================================================================================================
+
+14.Write a query to display unique passenger profile id,first name,mobile number and email address of passengers 
+who booked ticket to travel from HYDERABAD to CHENNAI.  
+Display the records sorted in ascending order based on profile id.
+
+select distinct app.profile_id,app.first_name,app.mobile_number,app.email_id from air_passenger_profile app
+join air_ticket_info ati on app.profile_id=ati.profile_id
+join air_flight af on af.flight_id=ati.flight_id
+where af.from_location ='Hyderabad' and af.to_location='Chennai'
+order by app.profile_id
+
++------------+------------+---------------+------------------+
+| profile_id | first_name | mobile_number | email_id         |
++------------+------------+---------------+------------------+
+| PFL001     | LATHA      |    9876543210 |  LATHA@GMAIL.COM |
+| PFL004     | AARTHI     |    9595652530 | AARTHI@GMAIL.COM |
+| PFL005     | SIVA       |    9884416986 | SIVA@GMAIL.COM   |
+| PFL008     | GANESH     |    9375237890 | GANESH@GMAIL.COM |
++------------+------------+---------------+------------------+
+4 rows in set (0.00 sec)
+
+===========================================================================================================
+ 
+15.Write a query to intimate the passengers who are boarding Chennai to Hyderabad Flight on 6th May 2013 stating the delay of 1hr 
+in the departure time. The Query should display the passenger’s profile_id, first_name,last_name, flight_id, flight_departure_date,  
+actual departure time , actual arrival time , delayed departure time as "Delayed_Departure_Time", 
+delayed arrival time as "Delayed_Arrival_Time" Hint: Distinct  Profile ID should be displayed irrespective of multiple tickets 
+booked by the same profile. 
+Display the records sorted in ascending order based on passenger's profile id. 
+
+select distinct app.profile_id,app.first_name,app.last_name,af.flight_id,ati.flight_departure_date,af.departure_time,af.arrival_time,
+addtime(af.departure_time,'1:00:00') as Delayed_Departure_Time,
+addtime(af.arrival_time,'1:00:00') as Delayed_Arrival_Time from air_passenger_profile app
+join air_ticket_info ati on ati.profile_id=app.profile_id
+join air_flight af on af.flight_id=ati.flight_id
+order by app.profile_id
+
++------------+------------+-----------+-----------+-----------------------+----------------+--------------+------------------------+----------------------+
+| profile_id | first_name | last_name | flight_id | flight_departure_date | departure_time | arrival_time | Delayed_Departure_Time | Delayed_Arrival_Time |
++------------+------------+-----------+-----------+-----------------------+----------------+--------------+------------------------+----------------------+
+| PFL001     | LATHA      | SANKAR    | 1265      | 2013-04-29            | 21:25:00       | 22:55:00     | 22:25:00               | 23:55:00             |
+| PFL001     | LATHA      | SANKAR    | 1011      | 2013-05-09            | 12:30:00       | 13:55:00     | 13:30:00               | 14:55:00             |
+| PFL002     | ARUN       | PRAKASH   | 3148      | 2013-06-01            | 20:15:00       | 21:20:00     | 21:15:00               | 22:20:00             |
+| PFL003     | AMIT       | VIKARAM   | 3244      | 2013-05-03            | 21:10:00       | 22:40:00     | 22:10:00               | 23:40:00             |
+| PFL004     | AARTHI     | RAMESH    | 1262      | 2013-05-20            | 06:00:00       | 07:20:00     | 07:00:00               | 08:20:00             |
+| PFL004     | AARTHI     | RAMESH    | 1265      | 2013-05-29            | 21:25:00       | 22:55:00     | 22:25:00               | 23:55:00             |
+| PFL005     | SIVA       | KUMAR     | 916       | 2013-05-06            | 19:55:00       | 21:00:00     | 20:55:00               | 22:00:00             |
+| PFL005     | SIVA       | KUMAR     | 1011      | 2013-05-09            | 12:30:00       | 13:55:00     | 13:30:00               | 14:55:00             |
+| PFL006     | RAMESH     | BABU      | 3244      | 2013-05-03            | 21:10:00       | 22:40:00     | 22:10:00               | 23:40:00             |
+| PFL007     | GAYATHRI   | RAGHU     | 3148      | 2013-05-21            | 20:15:00       | 21:20:00     | 21:15:00               | 22:20:00             |
+| PFL007     | GAYATHRI   | RAGHU     | 3004      | 2013-05-02            | 09:05:00       | 10:25:00     | 10:05:00               | 11:25:00             |
+| PFL008     | GANESH     | KANNAN    | 1011      | 2013-05-09            | 12:30:00       | 13:55:00     | 13:30:00               | 14:55:00             |
++------------+------------+-----------+-----------+-----------------------+----------------+--------------+------------------------+----------------------+
+12 rows in set (0.02 sec)
+
+
+
+===========================================================================================================
+16.Write a query to display the number of tickets as “No_of_Tickets” booked by Kochi Customers. 
+The Query should display the Profile_Id, First_Name, Base_Location and number of tickets booked.  
+Hint: Use String functions to get the base location of customer from their Address and give alias name as “Base_Location” 
+
+select app.profile_id,app.first_name,substring(app.address,-8,5) as Base_Location,count(ati.ticket_id) as No_of_Tickets from air_passenger_profile app
+join air_ticket_info ati on app.profile_id=ati.profile_id
+where address like '%Kochi%'
+group by app.profile_id
+order by app.profile_id
+
+----no---
++------------+------------+---------------+---------------+
+| profile_id | first_name | Base_Location | No_of_Tickets |
++------------+------------+---------------+---------------+
+| PFL003     | AMIT       | KOCHI         |             3 |
+| PFL006     | RAMESH     | KOCHI         |             4 |
++------------+------------+---------------+---------------+
+
+
+****yes*****
+select app.profile_id,app.first_name,substring_index(substring_index(app.address,',',-1),'-',1) as Base_Location,count(ati.ticket_id) as No_of_Tickets from air_passenger_profile app
+join air_ticket_info ati on app.profile_id=ati.profile_id
+where address like '%Kochi%'
+group by app.profile_id
+order by app.profile_id
+
++------------+------------+---------------+---------------+
+| profile_id | first_name | Base_Location | No_of_Tickets |
++------------+------------+---------------+---------------+
+| PFL003     | AMIT       | KOCHI         |             3 |
+| PFL006     | RAMESH     | KOCHI         |             4 |
++------------+------------+---------------+---------------+
+2 rows in set (0.00 sec)
+
+
+
+=========================================================================================================
+17.Write a query to display the flight_id, from_location, to_location, number of Services as “No_of_Services” offered in the month of May.  
+Hint:The number of services can be calculated from the number of scheduled departure dates of the flight
+Display the records sorted in ascending order based on flight id. 
+
+select af.flight_id,af.from_location,af.to_location,count(ati.flight_departure_date) as No_of_Services from air_flight af
+join air_ticket_info ati on ati.flight_id=af.flight_id
+where monthname(flight_departure_date)='May'
+group by af.flight_id
+order by af.flight_id 
+
++-----------+---------------+-------------+----------------+
+| flight_id | from_location | to_location | No_of_Services |
++-----------+---------------+-------------+----------------+
+| 1011      | HYDERABAD     | CHENNAI     |              4 |
+| 1262      | HYDERABAD     | CHENNAI     |              1 |
+| 1265      | CHENNAI       | HYDERABAD   |              1 |
+| 3004      | BENGALURU     | CHENNAI     |              3 |
+| 3148      | CHENNAI       | BENGALURU   |              2 |
+| 3244      | KOCHI         | CHENNAI     |              7 |
+| 916       | CHENNAI       | HYDERABAD   |              2 |
++-----------+---------------+-------------+----------------+
+7 rows in set (0.01 sec)
+
+=======================================================================================================
+
+18.Write a query to display profile id,last name,mobile number and email id of passengers whose base location is chennai. 
+Display the records sorted in ascending order based on profile id. 
+
+select app.profile_id,app.last_name,app.mobile_number,app.email_id from air_passenger_profile app
+where substring_index(substring_index(app.address,',',-1),'-',1) ='chennai'
+
+
++------------+-----------+---------------+------------------+
+| profile_id | last_name | mobile_number | email_id         |
++------------+-----------+---------------+------------------+
+| PFL001     | SANKAR    |    9876543210 |  LATHA@GMAIL.COM |
+| PFL005     | KUMAR     |    9884416986 | SIVA@GMAIL.COM   |
++------------+-----------+---------------+------------------+
+2 rows in set (0.00 sec)
+
+
+
+=====================================================================================================
+18.Write a query to display number of flights between 6.00 AM and 6.00 PM from chennai. Hint Use FLIGHT_COUNT as alias name. 
+
+
+select count(flight_id) as FLIGHT_COUNT from air_flight af
+where af.from_location='chennai' and departure_time between '6:00:00' and '18:00:00'
+group by af.flight_id
+
++--------------+
+| FLIGHT_COUNT |
++--------------+
+|            1 |
+|            1 |
+|            1 |
++--------------+
+3 rows in set (0.00 sec)
+================================================================================================================
+19.Write a query to display unique profile id,first name , email id and contact number of passenger(s) who travelled on flight with id 3148. 
+Display the records sorted in ascending order based on first name. 
+
+select distinct app.profile_id,app.first_name,app.email_id,app.mobile_number from air_passenger_profile app
+join air_ticket_info ati on ati.profile_id=app.profile_id
+where flight_id=3148
+order by first_name
+
+
++------------+------------+---------------------+---------------+
+| profile_id | first_name | email_id            | mobile_number |
++------------+------------+---------------------+---------------+
+| PFL002     | ARUN       | ARUN@AOL.COM        |    8094564243 |
+| PFL007     | GAYATHRI   | GAYATHRI@GMAIL.COM  |    8073245678 |
++------------+------------+---------------------+---------------+
+2 rows in set (0.00 sec)
+
+
+=================================================================================================================
+20.Write a query to display the flights available in Morning, AfterNoon, Evening & Night. 
+The Query should display the Flight_Id, From_Location, To_Location , Departure_Time, time of service as "Time_of_Service".   
+Time of Service should be calculated as: From 05:00:01 Hrs to 12:00:00 Hrs -  Morning, 12:00:01 to 18:00:00 Hrs -AfterNoon, 
+18:00:01 to 24:00:00 - Evening and 00:00:01 to 05:00:00 - Night  
+Display the records sorted in ascending order based on flight id. 
+
+
+select af.flight_id,af.from_location,af.to_location,af.departure_time,
+case
+when departure_time between '5:00:01' and '12:00:00' then 'Morning'
+when departure_time between '12:00:01' and '18:00:00' then 'AfterNoon'
+when departure_time between '18:00:01' and '24:00:00' then 'Evening'
+when departure_time between '00:00:01' and '05:00:00' then 'Night'
+end as Time_of_Service from air_flight af
+order by af.flight_id
+
++-----------+---------------+-------------+----------------+-----------------+
+| flight_id | from_location | to_location | departure_time | Time_of_Service |
++-----------+---------------+-------------+----------------+-----------------+
+| 1011      | HYDERABAD     | CHENNAI     | 12:30:00       | AfterNoon       |
+| 1262      | HYDERABAD     | CHENNAI     | 06:00:00       | Morning         |
+| 1265      | CHENNAI       | HYDERABAD   | 21:25:00       | Evening         |
+| 289       | CHENNAI       | KOCHI       | 08:40:00       | Morning         |
+| 3004      | BENGALURU     | CHENNAI     | 09:05:00       | Morning         |
+| 3013      | CHENNAI       | BENGALURU   | 07:40:00       | Morning         |
+| 3148      | CHENNAI       | BENGALURU   | 20:15:00       | Evening         |
+| 3241      | CHENNAI       | KOCHI       | 10:40:00       | Morning         |
+| 3244      | KOCHI         | CHENNAI     | 21:10:00       | Evening         |
+| 3307      | BENGALURU     | CHENNAI     | 18:45:00       | Evening         |
+| 916       | CHENNAI       | HYDERABAD   | 19:55:00       | Evening         |
++-----------+---------------+-------------+----------------+-----------------+
+11 rows in set (0.01 sec)
+
+
+
+===============================================================================================================
+21.Please follow instructions given below. 
+Write a query to display flight id,departure date,flight type of all flights. Flight type can be identified based on the following rules 
+: if ticket price is less than 3000 then 'AIR PASSENGER',ticket price between 3000 and less than 4000 'AIR BUS' 
+and ticket price between 4000 and greater than 4000 then 'EXECUTIVE PASSENGER'. Hint use FLIGHT_TYPE as alias name. 
+Display the records sorted in ascendeing order based on flight_id and then by departure date.
+
+select afd.flight_id,afd.flight_departure_date,
+case when afd.price<3000 then 'AIR PASSENGER'
+when afd.price>3000 and afd.price<4000 then 'AIR BUS'
+when afd.price>4000 then 'EXECUTIVE PASSENGER'
+end from air_flight_details afd
+order by cast(afd.flight_id as unsigned),flight_departure_date
+
+
+---------------------------------------------------------------------+
+| 289       | 2013-05-06            | AIR BUS                                                                                                                                                |
+| 289       | 2013-05-08            | AIR BUS                                                                                                                                                |
+| 289       | 2013-05-20            | AIR BUS                                                                                                                                                |
+| 289       | 2013-05-31            | AIR PASSENGER                                                                                                                                          |
+| 916       | 2013-04-28            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 916       | 2013-05-01            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 916       | 2013-05-06            | AIR BUS                                                                                                                                                |
+| 916       | 2013-05-12            | AIR BUS                                                                                                                                                |
+| 1011      | 2013-04-30            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 1011      | 2013-05-09            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 1011      | 2013-05-21            | AIR BUS                                                                                                                                                |
+| 1262      | 2013-05-20            | AIR BUS                                                                                                                                                |
+| 1262      | 2013-05-29            | AIR BUS                                                                                                                                                |
+| 1265      | 2013-04-29            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 1265      | 2013-05-14            | AIR BUS                                                                                                                                                |
+| 1265      | 2013-05-18            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 1265      | 2013-05-29            | AIR PASSENGER                                                                                                                                          |
+| 3004      | 2013-05-02            | AIR BUS                                                                                                                                                |
+| 3004      | 2013-05-19            | AIR BUS                                                                                                                                                |
+| 3004      | 2013-05-24            | AIR BUS                                                                                                                                                |
+| 3013      | 2013-05-04            | AIR BUS                                                                                                                                                |
+| 3013      | 2013-05-06            | AIR BUS                                                                                                                                                |
+| 3013      | 2013-05-22            | AIR BUS                                                                                                                                                |
+| 3013      | 2013-05-30            | AIR PASSENGER                                                                                                                                          |
+| 3148      | 2013-05-16            | AIR BUS                                                                                                                                                |
+| 3148      | 2013-05-21            | AIR BUS                                                                                                                                                |
+| 3148      | 2013-06-01            | AIR PASSENGER                                                                                                                                          |
+| 3241      | 2013-05-01            | EXECUTIVE PASSENGER                                                                                                                                    |
+| 3241      | 2013-05-13            | AIR BUS                                                                                                                                                |
+| 3241      | 2013-05-27            | AIR PASSENGER                                                                                                                                          |
+| 3244      | 2013-05-03            | AIR BUS                                                                                                                                                |
+| 3244      | 2013-05-15            | AIR BUS                                                                                                                                                |
+| 3307      | 2013-05-03            | AIR BUS                                                                                                                                                |
+| 3307      | 2013-05-03            | AIR BUS                                                                                                                                                |
+| 3307      | 2013-05-23            | AIR BUS                                                                                                                                                |
+| 3307      | 2013-05-29            | AIR BUS                                                                                                                                                |
++-----------+-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+
+36 rows in set (0.00 sec)
+==========================================================================================================
+
+22.Please follow instructions given below.  
+Write a query to display the credit card type and no of credit cards used on the same type.  
+Display the records sorted in ascending order based on credit card type. 
+Hint: Use CARD_COUNT AS Alias name for no of cards. 
+
+
+select  card_type,count(card_number) as CARD_COUNT from air_credit_card_details 
+group by card_type
+order by card_type
+
++-----------+------------+
+| card_type | CARD_COUNT |
++-----------+------------+
+| GOLD      |          3 |
+| INSTANT   |          2 |
+| PLATINIUM |          3 |
++-----------+------------+
+3 rows in set (0.00 sec)
+
+
+
+========================================================================================================
+23.Please follow instructions given below.  
+Write a Query to display serial no, first name,mobile number,email id of all the passengers who holds email address from gmail.com. 
+The Serial No will be the last three digits of profile ID. 
+Hint: Use SERIAL_NO as Alias name for serial number. 
+Display the records sorted in ascending order based on name. 
+
+select substring(profile_id,4,3) as SERIAL_NO,first_name,mobile_number,email_id from air_passenger_profile 
+where email_id like '%GMAIL.COM%'
+order by SERIAL_NO
+
+
++-----------+------------+---------------+---------------------+
+| SERIAL_NO | first_name | mobile_number | email_id            |
++-----------+------------+---------------+---------------------+
+| 001       | LATHA      |    9876543210 |  LATHA@GMAIL.COM    |
+| 004       | AARTHI     |    9595652530 | AARTHI@GMAIL.COM    |
+| 005       | SIVA       |    9884416986 | SIVA@GMAIL.COM      |
+| 006       | RAMESH     |    9432198760 |  RAMESH@GMAIL.COM   |
+| 007       | GAYATHRI   |    8073245678 | GAYATHRI@GMAIL.COM  |
+| 008       | GANESH     |    9375237890 | GANESH@GMAIL.COM    |
++-----------+------------+---------------+---------------------+
+6 rows in set (0.00 sec)
+
+=======================================================================================================
+24.Please follow instructions given below.  
+Write a query to display the flight(s) which has least number of services in the month of May. 
+The Query should fetch flight_id, from_location, to_location, least number of Services as “No_of_Services” 
+Hint: Number of services offered can be calculated from the number of scheduled departure dates of a flight 
+If there are multiple flights, display them sorted in ascending order based on flight id.
+
+select af.flight_id,af.from_location,af.to_location,count(afd.flight_departure_date) as No_of_Services from air_flight af
+join air_flight_details afd  
+on af.flight_id=afd.flight_id 
+where monthname(afd.flight_departure_date)='May'
+group by af.flight_id
+having count(afd.flight_departure_date)<=all(select count(afd.flight_departure_date) from air_flight_details afd
+join air_flight af 
+on af.flight_id=afd.flight_id 
+where monthname(afd.flight_departure_date) ='May' 
+group by af.flight_id)
+order by af.flight_id
+
++-----------+---------------+-------------+----------------+
+| flight_id | from_location | to_location | No_of_Services |
++-----------+---------------+-------------+----------------+
+| 1011      | HYDERABAD     | CHENNAI     |              2 |
+| 1262      | HYDERABAD     | CHENNAI     |              2 |
+| 3148      | CHENNAI       | BENGALURU   |              2 |
+| 3244      | KOCHI         | CHENNAI     |              2 |
++-----------+---------------+-------------+----------------+
+4 rows in set (0.00 sec)
+
+
+=====================================================================================================
+25.Please follow instructions given below. 
+Write a query to display the number of flights flying from each location. 
+The Query should display the from location and the number of flights to other locations as “No_of_Flights”.  
+Hint: Get the distinct from location and to location. 
+Display the records sorted in ascending order based on from location. 
+
+
+select distinct af.from_location,count(flight_id) as No_of_Flights from air_flight af
+where to_location is not null
+group by af.from_location
+order by from_location,to_location
+
+
++---------------+---------------+
+| from_location | No_of_Flights |
++---------------+---------------+
+| BENGALURU     |             2 |
+| CHENNAI       |             6 |
+| HYDERABAD     |             2 |
+| KOCHI         |             1 |
++---------------+---------------+
+4 rows in set (0.00 sec)
+
+====================================================================================================
+26.Please follow instructions given below.  
+Write a query to display the number of passengers traveled in each flight in each scheduled date. 
+The Query should display flight_id,from_location,To_location, flight_departure_date and the number of passengers as “No_of_Passengers”.   
+Hint: The Number of passengers inclusive of all the tickets booked with single profile id. 
+Display the records sorted in ascending order based on flight id and then by flight departure date. 
+
+select af.flight_id,af.from_location,af.to_location,ati.flight_departure_date,count(ati.ticket_id) as No_of_Passengers from air_flight af
+join air_ticket_info ati on ati.flight_id=af.flight_id 
+group by af.flight_id,flight_departure_date
+having count(ati.profile_id)>=1
+order by cast(af.flight_id as unsigned),ati.flight_departure_date
+
++-----------+---------------+-------------+-----------------------+------------------+
+| flight_id | from_location | to_location | flight_departure_date | No_of_Passengers |
++-----------+---------------+-------------+-----------------------+------------------+
+| 916       | CHENNAI       | HYDERABAD   | 2013-05-06            |                2 |
+| 1011      | HYDERABAD     | CHENNAI     | 2013-05-09            |                4 |
+| 1262      | HYDERABAD     | CHENNAI     | 2013-05-20            |                1 |
+| 1265      | CHENNAI       | HYDERABAD   | 2013-04-29            |                1 |
+| 1265      | CHENNAI       | HYDERABAD   | 2013-05-29            |                1 |
+| 3004      | BENGALURU     | CHENNAI     | 2013-05-02            |                3 |
+| 3148      | CHENNAI       | BENGALURU   | 2013-05-21            |                2 |
+| 3148      | CHENNAI       | BENGALURU   | 2013-06-01            |                5 |
+| 3244      | KOCHI         | CHENNAI     | 2013-05-03            |                7 |
++-----------+---------------+-------------+-----------------------+------------------+
+9 rows in set (0.00 sec)
+
+================================================================================================
+
+27.Please follow instructions given below. 
+Write a query to display the flight details in which more than 10% of seats have been booked. 
+The query should display Flight_Id, From_Location, To_Location,Total_Seats, seats booked as “No_of_Seats_Booked” . 
+Display the records sorted in ascending order based on flight id and then by No_of_Seats_Booked.
+
+
+select af.flight_id,af.from_location,af.to_location,af.total_seats,(af.total_seats-afd.available_seats) as No_of_Seats_Booked
+from air_flight af join air_flight_details afd 
+on af.flight_id=afd.flight_id
+where (af.total_seats-afd.available_seats)>(af.total_seats*0.1)
+group by af.flight_id 
+order by af.flight_id,No_of_Seats_Booked
+
+
++-----------+---------------+-------------+-------------+--------------------+
+| flight_id | from_location | to_location | total_seats | No_of_Seats_Booked |
++-----------+---------------+-------------+-------------+--------------------+
+| 3244      | KOCHI         | CHENNAI     |          50 |                  7 |
++-----------+---------------+-------------+-------------+--------------------+
+1 row in set (0.00 sec)
+
+
+
+===============================================================================================
+
+28.Please follow instructions given below.  
+Write a query to display the Flight_Id, Flight_Departure_Date, From_Location,To_Location and Duration 
+of all flights which has duration of travel less than 1 Hour, 10 Minutes.
+Display the records sorted in ascending order based on flight id and then by flight departure date.  
+
+
+select af.flight_id,afd.flight_departure_date,af.from_location,af.to_location,af.duration from air_flight  af
+join air_flight_details afd on afd.flight_id=af.flight_id
+where duration < '1:10:00'
+order by cast(af.flight_id as unsigned),afd.flight_departure_date
+
+
++-----------+-----------------------+---------------+-------------+----------+
+| flight_id | flight_departure_date | from_location | to_location | duration |
++-----------+-----------------------+---------------+-------------+----------+
+| 916       | 2013-04-28            | CHENNAI       | HYDERABAD   | 01:05:00 |
+| 916       | 2013-05-01            | CHENNAI       | HYDERABAD   | 01:05:00 |
+| 916       | 2013-05-06            | CHENNAI       | HYDERABAD   | 01:05:00 |
+| 916       | 2013-05-12            | CHENNAI       | HYDERABAD   | 01:05:00 |
+| 3013      | 2013-05-04            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3013      | 2013-05-06            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3013      | 2013-05-22            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3013      | 2013-05-30            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3148      | 2013-05-16            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3148      | 2013-05-21            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3148      | 2013-06-01            | CHENNAI       | BENGALURU   | 01:05:00 |
+| 3307      | 2013-05-03            | BENGALURU     | CHENNAI     | 01:00:00 |
+| 3307      | 2013-05-03            | BENGALURU     | CHENNAI     | 01:00:00 |
+| 3307      | 2013-05-23            | BENGALURU     | CHENNAI     | 01:00:00 |
+| 3307      | 2013-05-29            | BENGALURU     | CHENNAI     | 01:00:00 |
++-----------+-----------------------+---------------+-------------+----------+
+15 rows in set (0.00 sec)
+
+
+=============================================================================================
+
+29.Please follow instructions given below. 
+Write a query to display the flight_id, from_location,to_location,number of services as “No_of_Services” , 
+average ticket price as “Average_Price” whose average ticket price is greater than the total average ticket cost of  all flights. 
+Order the result by lowest average price. 
+
+
+select af.flight_id,af.from_location,af.to_location,count(afd.flight_departure_date) as No_of_Services,avg(afd.price) as Average_Price from air_flight af
+join air_flight_details afd  on afd.flight_id=af.flight_id
+group by af.flight_id
+having avg(afd.price)>(select avg(afd.price) from air_flight_details afd)
+order by afd.price 
+
++-----------+---------------+-------------+----------------+---------------+
+| flight_id | from_location | to_location | No_of_Services | Average_Price |
++-----------+---------------+-------------+----------------+---------------+
+| 1262      | HYDERABAD     | CHENNAI     |              2 |   3444.500000 |
+| 1265      | CHENNAI       | HYDERABAD   |              4 |   3499.250000 |
+| 916       | CHENNAI       | HYDERABAD   |              4 |   3699.500000 |
+| 1011      | HYDERABAD     | CHENNAI     |              3 |   4108.333333 |
++-----------+---------------+-------------+----------------+---------------+
+4 rows in set (0.00 sec)
+
+
+============================================================================================
+
+</body>
+
+
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
